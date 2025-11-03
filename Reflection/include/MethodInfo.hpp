@@ -11,11 +11,11 @@ using InvokeHandler = std::function<std::any(std::any, std::any)>;
 class MethodInfo final : public MemberInfo
 {
   public:
-    template <class Class, typename TRet, typename... TArgs>
-    MethodInfo(const std::string &name, TRet (Class::*methodPointer)(TArgs...)) : MemberInfo(name)
+    template <class TClass, typename TRet, typename... TArgs>
+    MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...)) : MemberInfo(name)
     {
         mInvokeHandler = [methodPointer](std::any obj, std::any args) -> std::any {
-            auto &instance = std::any_cast<std::reference_wrapper<Class>>(obj).get();
+            auto &instance = std::any_cast<std::reference_wrapper<TClass>>(obj).get();
             auto &tupleArgs = std::any_cast<std::tuple<TArgs &&...> &>(args);
             return std::apply(
                 [&instance, methodPointer](TArgs &&...unpackedArgs) {
@@ -33,11 +33,11 @@ class MethodInfo final : public MemberInfo
         };
         mIsConst = false;
     }
-    template <class Class, typename TRet, typename... TArgs>
-    MethodInfo(const std::string &name, TRet (Class::*methodPointer)(TArgs...) const) : MemberInfo(name)
+    template <class TClass, typename TRet, typename... TArgs>
+    MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...) const) : MemberInfo(name)
     {
         mInvokeHandler = [methodPointer](std::any obj, std::any args) -> std::any {
-            auto &instance = std::any_cast<std::reference_wrapper<const Class>>(obj).get();
+            auto &instance = std::any_cast<std::reference_wrapper<const TClass>>(obj).get();
             auto &tupleArgs = std::any_cast<std::tuple<TArgs &&...> &>(args);
             return std::apply(
                 [&instance, methodPointer](TArgs &&...unpackedArgs) {
@@ -57,7 +57,7 @@ class MethodInfo final : public MemberInfo
     }
 
   public:
-    template <class Class, typename... TArgs> std::any Invoke(Class &obj, TArgs &&...args) const
+    template <class TClass, typename... TArgs> std::any Invoke(TClass &obj, TArgs &&...args) const
     {
         if (mIsConst)
         {

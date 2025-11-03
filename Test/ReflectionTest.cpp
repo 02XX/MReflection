@@ -1,5 +1,6 @@
 #include "MReflection.hpp"
 #include <gtest/gtest.h>
+#include <iostream>
 #include <string>
 
 using namespace MReflection;
@@ -19,17 +20,13 @@ class Animal
     }
     void CelebrateBirthday()
     {
-        GTEST_LOG_(INFO) << "Happy Birthday, " << Name << "!";
+        std::cout << "Happy Birthday, " << Name << "!" << std::endl;
         Age += 1;
     }
     std::string SetName(const std::string &newName)
     {
         Name = newName;
         return Name;
-    }
-    void ChangeName(std::string &nameRef)
-    {
-        nameRef = "ChangedName";
     }
 };
 
@@ -43,6 +40,10 @@ class Dog : public Animal
     std::string Speak() const override
     {
         return "Woof!";
+    }
+    void Eat()
+    {
+        std::cout << Name << " is eating." << std::endl;
     }
 };
 
@@ -89,4 +90,57 @@ TEST(ReflectionTest, GetSetField)
     EXPECT_EQ(nameField->GetValue<std::string>(*animal), "NewAnimalName");
     auto celebrateMethod = registry.GetType("Animal")->GetMethod("CelebrateBirthday");
     celebrateMethod->Invoke(*animal);
+}
+TEST(ReflectionTest, InheritedMethod)
+{
+    MReflection::Registry &registry = MReflection::Registry::GetInstance();
+    auto dog = std::make_shared<Dog>("Buddy", 3, "Golden Retriever");
+    MReflection::AddClass("Animal")
+        .AddField("Name", &Animal::Name)
+        .AddField("Age", &Animal::Age)
+        .AddMethod("Speak", &Animal::Speak)
+        .AddMethod("CelebrateBirthday", &Animal::CelebrateBirthday)
+        .AddMethod("SetName", &Animal::SetName);
+    MReflection::AddClass("Dog")
+        .AddBaseClass("Animal")
+        .AddField("Breed", &Dog::Breed)
+        .AddMethod("Speak", &Dog::Speak)
+        .AddMethod("Eat", &Dog::Eat);
+    auto dogFields = registry.GetType("Dog")->GetFields();
+    for (const auto &field : dogFields)
+    {
+        GTEST_LOG_(INFO) << "Dog Field: " << field.GetName();
+    }
+    auto dogMethods = registry.GetType("Dog")->GetMethods();
+    for (const auto &method : dogMethods)
+    {
+        GTEST_LOG_(INFO) << "Dog Method: " << method.GetName();
+    }
+}
+
+TEST(ReflectionTest, InheritedMethod_2)
+{
+    MReflection::Registry &registry = MReflection::Registry::GetInstance();
+    auto dog = std::make_shared<Dog>("Buddy", 3, "Golden Retriever");
+    MReflection::AddClass<Animal>()
+        .AddField("Name", &Animal::Name)
+        .AddField("Age", &Animal::Age)
+        .AddMethod("Speak", &Animal::Speak)
+        .AddMethod("CelebrateBirthday", &Animal::CelebrateBirthday)
+        .AddMethod("SetName", &Animal::SetName);
+    MReflection::AddClass<Dog>()
+        .AddBaseClass<Animal>()
+        .AddField("Breed", &Dog::Breed)
+        .AddMethod("Speak", &Dog::Speak)
+        .AddMethod("Eat", &Dog::Eat);
+    auto dogFields = registry.GetType("Dog")->GetFields();
+    for (const auto &field : dogFields)
+    {
+        GTEST_LOG_(INFO) << "Dog Field: " << field.GetName();
+    }
+    auto dogMethods = registry.GetType("Dog")->GetMethods();
+    for (const auto &method : dogMethods)
+    {
+        GTEST_LOG_(INFO) << "Dog Method: " << method.GetName();
+    }
 }

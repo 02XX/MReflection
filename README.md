@@ -5,7 +5,7 @@
 ## TODO
 
 - [x] 基本运行时反射功能
-- [ ] 继承支持
+- [x] 继承支持
 - [ ] 构造反射
 - [ ] clang AST自动生成反射元信息
 
@@ -41,7 +41,7 @@ class Animal
     }
 };
 auto animal = std::make_shared<Animal>("GenericAnimal", 5);
-MReflection::AddClass("Animal")
+MReflection::AddTClass("Animal")
     .AddField("Name", &Animal::Name)
     .AddField("Age", &Animal::Age)
     .AddMethod("Speak", &Animal::Speak)
@@ -51,6 +51,18 @@ auto nameField = registry.GetType("Animal")->GetField("Name");
 nameField->SetValue<std::string>(*animal, "NewAnimalName");
 auto celebrateMethod = registry.GetType("Animal")->GetMethod("CelebrateBirthday");
 celebrateMethod->Invoke(*animal);
+//or
+MReflection::AddClass<Animal>()
+    .AddField("Name", &Animal::Name)
+    .AddField("Age", &Animal::Age)
+    .AddMethod("Speak", &Animal::Speak)
+    .AddMethod("CelebrateBirthday", &Animal::CelebrateBirthday)
+    .AddMethod("SetName", &Animal::SetName);
+MReflection::AddClass<Dog>()
+    .AddBaseClass<Animal>()
+    .AddField("Breed", &Dog::Breed)
+    .AddMethod("Speak", &Dog::Speak)
+    .AddMethod("Eat", &Dog::Eat);
 ```
 
 ## 如何贡献

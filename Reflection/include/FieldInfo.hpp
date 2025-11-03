@@ -9,26 +9,26 @@ namespace MReflection
 class FieldInfo final : public MemberInfo
 {
   public:
-    template <class Class, typename TField>
-    FieldInfo(const std::string &name, TField Class::*fieldPointer) : MemberInfo(name)
+    template <class TTClass, typename TField>
+    FieldInfo(const std::string &name, TField TTClass::*fieldPointer) : MemberInfo(name)
     {
         mGetter = [fieldPointer](std::any obj) -> std::any {
-            auto &instance = std::any_cast<std::reference_wrapper<const Class>>(obj).get();
+            auto &instance = std::any_cast<std::reference_wrapper<const TTClass>>(obj).get();
             return instance.*fieldPointer;
         };
         mSetter = [fieldPointer](std::any obj, std::any value) {
-            auto &instance = std::any_cast<std::reference_wrapper<Class>>(obj).get();
+            auto &instance = std::any_cast<std::reference_wrapper<TTClass>>(obj).get();
             instance.*fieldPointer =
                 std::any_cast<typename std::remove_reference<decltype(instance.*fieldPointer)>::type>(value);
         };
     }
 
   public:
-    template <class TRet, class Class> TRet GetValue(const Class &obj) const
+    template <class TRet, class TTClass> TRet GetValue(const TTClass &obj) const
     {
         return std::any_cast<TRet>(mGetter(std::cref(obj)));
     }
-    template <class TValue, class Class> void SetValue(Class &obj, TValue &&value) const
+    template <class TValue, class TTClass> void SetValue(TTClass &obj, TValue &&value) const
     {
         mSetter(std::ref(obj), std::forward<TValue>(value));
     }

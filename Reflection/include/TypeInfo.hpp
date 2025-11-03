@@ -22,10 +22,12 @@ class TypeInfo final : public MemberInfo, public IReflect
     MethodInfo *GetMethod(const std::string &name) const override;
     std::vector<MethodInfo> GetMethods() const override;
     std::vector<FieldInfo> GetFields() const override;
+    TypeInfo *GetBaseType() const;
 
   private:
     MemberType mMemberType{MemberType::TypeInfo};
     std::unordered_map<std::string, std::unique_ptr<FieldInfo>> mFields;
     std::unordered_map<std::string, std::unique_ptr<MethodInfo>> mMethods;
+    TypeInfo *mBaseType{nullptr};
 };
 } // namespace MReflection
