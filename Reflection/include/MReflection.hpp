@@ -17,6 +17,10 @@ class Registry final
   public:
     static Registry &GetInstance();
     TypeInfo *GetType(const std::string &name) const;
+    template <class TClass> TypeInfo *GetType() const
+    {
+        return GetType(typeid(TClass).name());
+    }
 
   private:
     std::unordered_map<std::string, std::unique_ptr<TypeInfo>> mTypes;
