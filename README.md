@@ -7,7 +7,7 @@
 - [x] 基本运行时反射功能
 - [x] 继承支持
 - [ ] 构造反射
-- [ ] clang AST自动生成反射元信息
+- [x] clang AST自动生成反射元信息
 
 ## 快速开始
 
@@ -63,6 +63,11 @@ MReflection::AddClass<Dog>()
     .AddField("Breed", &Dog::Breed)
     .AddMethod("Speak", &Dog::Speak)
     .AddMethod("Eat", &Dog::Eat);
+//or 
+Generator generator;
+generator.Generate(sourceDirectory); //在sourceDirectory下面生成generated
+//or
+generator.Generate(sourcePath, outputPath);
 ```
 
 ## 如何贡献
