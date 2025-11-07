@@ -22,9 +22,9 @@ class TypeInfo final : public MemberInfo, public IReflect
     FieldInfo *GetField(const std::string &name) const override;
     MethodInfo *GetMethod(const std::string &name) const override;
     ConstructorInfo *GetConstructor(const std::string &name) const override;
-    std::vector<MethodInfo> GetMethods() const override;
-    std::vector<FieldInfo> GetFields() const override;
-    std::vector<ConstructorInfo> GetConstructors() const override;
+    std::vector<MethodInfo *> GetMethods() const override;
+    std::vector<FieldInfo *> GetFields() const override;
+    std::vector<ConstructorInfo *> GetConstructors() const override;
     TypeInfo *GetBaseType() const;
 
   private:

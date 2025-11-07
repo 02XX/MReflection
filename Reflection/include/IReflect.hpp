@@ -14,8 +14,8 @@ class IReflect
     virtual MethodInfo *GetMethod(const std::string &name) const = 0;
     virtual FieldInfo *GetField(const std::string &name) const = 0;
     virtual ConstructorInfo *GetConstructor(const std::string &name) const = 0;
-    virtual std::vector<MethodInfo> GetMethods() const = 0;
-    virtual std::vector<FieldInfo> GetFields() const = 0;
-    virtual std::vector<ConstructorInfo> GetConstructors() const = 0;
+    virtual std::vector<MethodInfo *> GetMethods() const = 0;
+    virtual std::vector<FieldInfo *> GetFields() const = 0;
+    virtual std::vector<ConstructorInfo *> GetConstructors() const = 0;
 };
 } // namespace MReflection

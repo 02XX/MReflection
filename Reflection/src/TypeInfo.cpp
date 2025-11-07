@@ -35,31 +35,31 @@ ConstructorInfo *TypeInfo::GetConstructor(const std::string &name) const
     }
     throw std::runtime_error("Constructor not found: " + name);
 }
-std::vector<MethodInfo> TypeInfo::GetMethods() const
+std::vector<MethodInfo *> TypeInfo::GetMethods() const
 {
-    std::vector<MethodInfo> methods;
+    std::vector<MethodInfo *> methods;
     for (const auto &[name, method] : mMethods)
     {
-        methods.push_back(*method);
+        methods.push_back(method.get());
     }
     if (mBaseType)
     {
         auto baseMethods = mBaseType->GetMethods();
         for (const auto &method : baseMethods)
         {
-            if (mMethods.contains(method.GetName())) // Skip overridden methods
+            if (mMethods.contains(method->GetName())) // Skip overridden methods
                 continue;
             methods.push_back(method);
         }
     }
     return methods;
 }
-std::vector<FieldInfo> TypeInfo::GetFields() const
+std::vector<FieldInfo *> TypeInfo::GetFields() const
 {
-    std::vector<FieldInfo> fields;
+    std::vector<FieldInfo *> fields;
     for (const auto &[name, field] : mFields)
     {
-        fields.push_back(*field);
+        fields.push_back(field.get());
     }
     if (mBaseType)
     {
@@ -71,12 +71,12 @@ std::vector<FieldInfo> TypeInfo::GetFields() const
     }
     return fields;
 }
-std::vector<ConstructorInfo> TypeInfo::GetConstructors() const
+std::vector<ConstructorInfo *> TypeInfo::GetConstructors() const
 {
-    std::vector<ConstructorInfo> constructors;
+    std::vector<ConstructorInfo *> constructors;
     for (const auto &[name, constructor] : mConstructors)
     {
-        constructors.push_back(*constructor);
+        constructors.push_back(constructor.get());
     }
     return constructors;
 }

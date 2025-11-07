@@ -15,9 +15,10 @@ class TypeInfoBuilder
     virtual TypeInfoBuilder &AddBaseClass(const std::string &baseTClassName);
     virtual TypeInfoBuilder &AddBaseClass(TypeInfo *baseTypeInfo);
 
-    template <class TClass> TypeInfoBuilder &AddConstructor()
+    template <class TClass, typename... TArgs> TypeInfoBuilder &AddConstructor()
     {
-        mTypeInfo->mConstructors[typeid(TClass).name()] = std::make_unique<ConstructorInfo>(typeid(TClass).name());
+        mTypeInfo->mConstructors[typeid(TClass).name()] =
+            std::make_unique<ConstructorInfoImpl<TClass, TArgs...>>(typeid(TClass).name());
         return *this;
     }
     template <class TClass, typename TField>
