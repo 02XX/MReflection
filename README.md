@@ -6,7 +6,7 @@
 
 - [x] 基本运行时反射功能
 - [x] 继承支持
-- [ ] 构造反射
+- [x] 构造反射
 - [x] clang AST自动生成反射元信息
 
 ## 快速开始
@@ -53,6 +53,7 @@ auto celebrateMethod = registry.GetType("Animal")->GetMethod("CelebrateBirthday"
 celebrateMethod->Invoke(*animal);
 //or
 MReflection::AddClass<Animal>()
+    .AddConstructor<std::string, int, std::string>()
     .AddField("Name", &Animal::Name)
     .AddField("Age", &Animal::Age)
     .AddMethod("Speak", &Animal::Speak)
