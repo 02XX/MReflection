@@ -8,6 +8,7 @@ template <class TClass> class TypeBuilder : public TypeInfoBuilder
   public:
     TypeBuilder() : TypeInfoBuilder(typeid(TClass).name())
     {
+        TypeInfoBuilder::AddConstructor<TClass>();
     }
     ~TypeBuilder() override = default;
     template <class TBase> TypeBuilder &AddBaseClass()

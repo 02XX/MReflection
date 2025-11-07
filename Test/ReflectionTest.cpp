@@ -1,4 +1,5 @@
 #include "MReflection.hpp"
+#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <string>
@@ -10,6 +11,7 @@ class Animal
   public:
     Animal(const std::string &name, int age) : Name(name), Age(age)
     {
+        GTEST_LOG_(INFO) << "Animal constructor called for " << Name;
     }
     virtual ~Animal() = default;
     std::string Name;
@@ -35,6 +37,7 @@ class Dog : public Animal
   public:
     Dog(const std::string &name, int age, const std::string &breed) : Animal(name, age), Breed(breed)
     {
+        GTEST_LOG_(INFO) << "Dog constructor called for " << Name;
     }
     std::string Breed;
     std::string Speak() const override
@@ -143,4 +146,19 @@ TEST(ReflectionTest, InheritedMethod_2)
     {
         GTEST_LOG_(INFO) << "Dog Method: " << method.GetName();
     }
+}
+TEST(ReflectionTest, ConstructorInvocation)
+{
+    MReflection::Registry &registry = MReflection::Registry::GetInstance();
+    MReflection::AddClass<Dog>()
+        .AddField("Name", &Dog::Name)
+        .AddField("Age", &Dog::Age)
+        .AddMethod("Speak", &Dog::Speak)
+        .AddMethod("CelebrateBirthday", &Dog::CelebrateBirthday);
+    auto constructorInfo = registry.GetType<Dog>()->GetConstructor(typeid(Dog).name());
+    std::string name = "ReflectedDog";
+    std::string breed = "Beagle";
+    auto dogInstance = constructorInfo->Invoke<Dog>(name, 4, breed);
+    EXPECT_EQ(dogInstance->Name, "ReflectedDog");
+    EXPECT_EQ(dogInstance->Age, 4);
 }

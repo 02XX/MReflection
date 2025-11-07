@@ -1,4 +1,5 @@
 #pragma once
+#include "ConstructorInfo.hpp"
 #include "TypeInfo.hpp"
 #include <memory>
 
@@ -13,6 +14,12 @@ class TypeInfoBuilder
     virtual ~TypeInfoBuilder();
     virtual TypeInfoBuilder &AddBaseClass(const std::string &baseTClassName);
     virtual TypeInfoBuilder &AddBaseClass(TypeInfo *baseTypeInfo);
+
+    template <class TClass> TypeInfoBuilder &AddConstructor()
+    {
+        mTypeInfo->mConstructors[typeid(TClass).name()] = std::make_unique<ConstructorInfo>(typeid(TClass).name());
+        return *this;
+    }
     template <class TClass, typename TField>
     TypeInfoBuilder &AddField(const std::string &fieldName, TField TClass::*fieldPointer)
     {

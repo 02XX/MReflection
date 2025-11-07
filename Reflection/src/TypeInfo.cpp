@@ -27,6 +27,14 @@ MethodInfo *TypeInfo::GetMethod(const std::string &name) const
     }
     throw std::runtime_error("Method not found: " + name);
 }
+ConstructorInfo *TypeInfo::GetConstructor(const std::string &name) const
+{
+    if (mConstructors.contains(name))
+    {
+        return mConstructors.at(name).get();
+    }
+    throw std::runtime_error("Constructor not found: " + name);
+}
 std::vector<MethodInfo> TypeInfo::GetMethods() const
 {
     std::vector<MethodInfo> methods;
@@ -62,5 +70,14 @@ std::vector<FieldInfo> TypeInfo::GetFields() const
         }
     }
     return fields;
+}
+std::vector<ConstructorInfo> TypeInfo::GetConstructors() const
+{
+    std::vector<ConstructorInfo> constructors;
+    for (const auto &[name, constructor] : mConstructors)
+    {
+        constructors.push_back(*constructor);
+    }
+    return constructors;
 }
 } // namespace MReflection
