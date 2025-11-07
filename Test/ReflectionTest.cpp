@@ -151,12 +151,12 @@ TEST(ReflectionTest, ConstructorInvocation)
 {
     MReflection::Registry &registry = MReflection::Registry::GetInstance();
     MReflection::AddClass<Dog>()
-        .AddConstructor<std::string, int, std::string>()
+        .AddConstructor<std::string, int, std::string>("DogConstructor")
         .AddField("Name", &Dog::Name)
         .AddField("Age", &Dog::Age)
         .AddMethod("Speak", &Dog::Speak)
         .AddMethod("CelebrateBirthday", &Dog::CelebrateBirthday);
-    auto constructorInfo = registry.GetType<Dog>()->GetConstructor(typeid(Dog).name());
+    auto constructorInfo = registry.GetType<Dog>()->GetConstructor("DogConstructor");
     std::string name = "ReflectedDog";
     std::string breed = "Beagle";
     auto dogInstance = constructorInfo->Create<Dog>(name, 4, breed);

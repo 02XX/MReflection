@@ -10,9 +10,9 @@ template <class TClass> class TypeBuilder : public TypeInfoBuilder
     {
     }
     ~TypeBuilder() override = default;
-    template <class... TArgs> TypeBuilder &AddConstructor()
+    template <class... TArgs> TypeBuilder &AddConstructor(const std::string &constructorName)
     {
-        TypeInfoBuilder::AddConstructor<TClass, TArgs...>();
+        TypeInfoBuilder::AddConstructor<TClass, TArgs...>(constructorName);
         return *this;
     }
     template <class TBase> TypeBuilder &AddBaseClass()
