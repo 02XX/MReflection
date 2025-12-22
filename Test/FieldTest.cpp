@@ -49,8 +49,8 @@ class Dog : public Animal
 TEST(FieldTest, GetSetField)
 {
     auto animal = std::make_shared<Animal>("GenericAnimal", 5);
-    FieldInfo nameField("Name", &Animal::Name);
-    FieldInfo ageField("Age", &Animal::Age);
+    FieldInfo nameField("Name", &Animal::Name, nullptr);
+    FieldInfo ageField("Age", &Animal::Age, nullptr);
     std::any nameValue = nameField.GetValue<std::string>(*animal);
     EXPECT_EQ(std::any_cast<std::string>(nameValue), "GenericAnimal");
     std::any ageValue = ageField.GetValue<int>(*animal);

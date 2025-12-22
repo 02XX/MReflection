@@ -6,11 +6,13 @@
 
 namespace MReflection
 {
+class TypeInfo;
 class FieldInfo final : public MemberInfo
 {
   public:
     template <class TTClass, typename TField>
-    FieldInfo(const std::string &name, TField TTClass::*fieldPointer) : MemberInfo(name)
+    FieldInfo(const std::string &name, TField TTClass::*fieldPointer, TypeInfo *declaringType)
+        : MemberInfo(name, declaringType)
     {
         mGetter = [fieldPointer](std::any obj) -> std::any {
             auto &instance = std::any_cast<std::reference_wrapper<const TTClass>>(obj).get();
@@ -21,6 +23,10 @@ class FieldInfo final : public MemberInfo
             instance.*fieldPointer =
                 std::any_cast<typename std::remove_reference<decltype(instance.*fieldPointer)>::type>(value);
         };
+    }
+    inline MemberTypes GetMemberType() const override
+    {
+        return MemberTypes::Field;
     }
 
   public:
@@ -34,7 +40,6 @@ class FieldInfo final : public MemberInfo
     }
 
   private:
-    MemberType mMemberType{MemberType::Field};
     std::function<std::any(std::any)> mGetter{nullptr};
     std::function<void(std::any, std::any)> mSetter{nullptr};
 };

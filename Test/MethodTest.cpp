@@ -49,10 +49,10 @@ class Dog : public Animal
 TEST(MethodInfoTest, InvokeMethod)
 {
     auto animal = std::make_shared<Animal>("GenericAnimal", 5);
-    MethodInfo speakMethod("Speak", &Animal::Speak);
-    MethodInfo celebrateMethod("CelebrateBirthday", &Animal::CelebrateBirthday);
-    MethodInfo setNameMethod("SetName", &Animal::SetName);
-    MethodInfo changeNameMethod("ChangeName", &Animal::ChangeName);
+    MethodInfo speakMethod("Speak", &Animal::Speak, nullptr);
+    MethodInfo celebrateMethod("CelebrateBirthday", &Animal::CelebrateBirthday, nullptr);
+    MethodInfo setNameMethod("SetName", &Animal::SetName, nullptr);
+    MethodInfo changeNameMethod("ChangeName", &Animal::ChangeName, nullptr);
     std::any result = speakMethod.Invoke(*animal);
     EXPECT_EQ(std::any_cast<std::string>(result), "Animal sound");
 

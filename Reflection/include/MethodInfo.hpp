@@ -12,7 +12,8 @@ class MethodInfo final : public MemberInfo
 {
   public:
     template <class TClass, typename TRet, typename... TArgs>
-    MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...)) : MemberInfo(name)
+    MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...), TypeInfo *declaringType)
+        : MemberInfo(name, declaringType)
     {
         mInvokeHandler = [methodPointer](std::any obj, std::any args) -> std::any {
             auto &instance = std::any_cast<std::reference_wrapper<TClass>>(obj).get();
@@ -34,7 +35,8 @@ class MethodInfo final : public MemberInfo
         mIsConst = false;
     }
     template <class TClass, typename TRet, typename... TArgs>
-    MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...) const) : MemberInfo(name)
+    MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...) const, TypeInfo *declaringType)
+        : MemberInfo(name, declaringType)
     {
         mInvokeHandler = [methodPointer](std::any obj, std::any args) -> std::any {
             auto &instance = std::any_cast<std::reference_wrapper<const TClass>>(obj).get();
@@ -55,6 +57,10 @@ class MethodInfo final : public MemberInfo
         };
         mIsConst = true;
     }
+    inline MemberTypes GetMemberType() const override
+    {
+        return MemberTypes::Method;
+    }
 
   public:
     template <class TClass, typename... TArgs> std::any Invoke(TClass &obj, TArgs &&...args) const
@@ -74,6 +80,5 @@ class MethodInfo final : public MemberInfo
     bool mIsProtected{false};
     bool mIsPrivate{false};
     InvokeHandler mInvokeHandler{nullptr};
-    MemberType mMemberType{MemberType::Method};
 };
 } // namespace MReflection

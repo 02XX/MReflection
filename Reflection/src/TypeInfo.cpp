@@ -13,7 +13,7 @@ FieldInfo *TypeInfo::GetField(const std::string &name) const
     {
         return mBaseType->GetField(name);
     }
-    throw std::runtime_error("Field not found: " + name);
+    return nullptr;
 }
 MethodInfo *TypeInfo::GetMethod(const std::string &name) const
 {
@@ -25,7 +25,7 @@ MethodInfo *TypeInfo::GetMethod(const std::string &name) const
     {
         return mBaseType->GetMethod(name);
     }
-    throw std::runtime_error("Method not found: " + name);
+    return nullptr;
 }
 ConstructorInfo *TypeInfo::GetConstructor(const std::string &name) const
 {
@@ -33,7 +33,7 @@ ConstructorInfo *TypeInfo::GetConstructor(const std::string &name) const
     {
         return mConstructors.at(name).get();
     }
-    throw std::runtime_error("Constructor not found: " + name);
+    return nullptr;
 }
 std::vector<MethodInfo *> TypeInfo::GetMethods() const
 {
@@ -79,5 +79,40 @@ std::vector<ConstructorInfo *> TypeInfo::GetConstructors() const
         constructors.push_back(constructor.get());
     }
     return constructors;
+}
+FieldInfo *TypeInfo::GetDeclaredField(const std::string &name) const
+{
+    if (mFields.contains(name))
+    {
+        return mFields.at(name).get();
+    }
+    return nullptr;
+}
+MethodInfo *TypeInfo::GetDeclaredMethod(const std::string &name) const
+{
+    if (mMethods.contains(name))
+    {
+        return mMethods.at(name).get();
+    }
+    return nullptr;
+}
+
+std::vector<FieldInfo *> TypeInfo::GetDeclaredFields() const
+{
+    std::vector<FieldInfo *> fields;
+    for (const auto &[name, field] : mFields)
+    {
+        fields.push_back(field.get());
+    }
+    return fields;
+}
+std::vector<MethodInfo *> TypeInfo::GetDeclaredMethods() const
+{
+    std::vector<MethodInfo *> methods;
+    for (const auto &[name, method] : mMethods)
+    {
+        methods.push_back(method.get());
+    }
+    return methods;
 }
 } // namespace MReflection

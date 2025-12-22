@@ -39,6 +39,10 @@ class Dog : public Animal
     {
         GTEST_LOG_(INFO) << "Dog constructor called for " << Name;
     }
+    Dog(const std::string &name) : Animal(name, 0), Breed("Unknown")
+    {
+        GTEST_LOG_(INFO) << "Dog constructor called for " << Name;
+    }
     std::string Breed;
     std::string Speak() const override
     {
@@ -152,6 +156,7 @@ TEST(ReflectionTest, ConstructorInvocation)
     MReflection::Registry &registry = MReflection::Registry::GetInstance();
     MReflection::AddClass<Dog>()
         .AddConstructor<std::string, int, std::string>("DogConstructor")
+        .AddConstructor<std::string>("Ctor2")
         .AddField("Name", &Dog::Name)
         .AddField("Age", &Dog::Age)
         .AddMethod("Speak", &Dog::Speak)
@@ -162,4 +167,11 @@ TEST(ReflectionTest, ConstructorInvocation)
     auto dogInstance = constructorInfo->Create<Dog>(name, 4, breed);
     EXPECT_EQ(dogInstance->Name, "ReflectedDog");
     EXPECT_EQ(dogInstance->Age, 4);
+
+    auto constructorInfo2 = registry.GetType<Dog>()->GetConstructor("Ctor2");
+    std::string name2 = "SecondDog";
+    auto dogInstance2 = constructorInfo2->Create<Dog>(name2);
+    EXPECT_EQ(dogInstance2->Name, "SecondDog");
+    EXPECT_EQ(dogInstance2->Age, 0);
+    EXPECT_EQ(dogInstance2->Breed, "Unknown");
 }
