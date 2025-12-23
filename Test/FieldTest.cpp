@@ -11,6 +11,7 @@ class Animal
     }
     virtual ~Animal() = default;
     std::string Name;
+    const int id = 1;
     int Age;
 };
 
@@ -22,7 +23,6 @@ class Dog : public Animal
     }
     std::string Breed;
 };
-
 TEST(FieldTest, Getter_Reference)
 {
     auto animal = std::make_shared<Animal>("GenericAnimal", 5);
@@ -76,4 +76,17 @@ TEST(FieldTest, Setter_SharedPointer)
     ageField.SetValue<int>(animal, 6);
     EXPECT_EQ(animal->Name, "UpdatedAnimal");
     EXPECT_EQ(animal->Age, 6);
+}
+
+TEST(FieldTest, Getter_ConstField)
+{
+    auto animal = std::make_shared<Animal>("GenericAnimal", 5);
+    FieldInfo idField("id", &Animal::id, nullptr);
+    EXPECT_EQ(idField.GetValue<int>(*animal), 1);
+}
+TEST(FieldTest, Setter_ConstField)
+{
+    auto animal = std::make_shared<Animal>("GenericAnimal", 5);
+    FieldInfo idField("id", &Animal::id, nullptr);
+    EXPECT_THROW(idField.SetValue<int>(*animal, 10), std::runtime_error);
 }

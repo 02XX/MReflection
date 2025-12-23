@@ -27,8 +27,15 @@ class FieldInfo final : public MemberInfo
             return instance.*fieldPointer;
         };
         mSetter = [fieldPointer](std::any obj, std::any value) {
-            auto &instance = std::any_cast<std::reference_wrapper<TTClass>>(obj).get();
-            instance.*fieldPointer = std::any_cast<typename std::remove_cvref<TField>::type>(std::move(value));
+            if constexpr (std::is_const_v<typename std::remove_reference<TField>::type>)
+            {
+                throw std::runtime_error("Cannot set value to const field");
+            }
+            else
+            {
+                auto &instance = std::any_cast<std::reference_wrapper<TTClass>>(obj).get();
+                instance.*fieldPointer = std::any_cast<typename std::remove_cvref<TField>::type>(std::move(value));
+            }
         };
     }
     inline MemberTypes GetMemberType() const override
