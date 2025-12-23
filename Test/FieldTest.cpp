@@ -1,8 +1,11 @@
 #include "FieldInfo.hpp"
+#include "Float.hpp"
+#include "Int.hpp"
 #include <gtest/gtest.h>
 #include <string>
 
 using namespace MReflection;
+
 class Animal
 {
   public:
@@ -11,8 +14,8 @@ class Animal
     }
     virtual ~Animal() = default;
     std::string Name;
-    const int id = 1;
-    int Age;
+    const Int id = 1;
+    Int Age;
 };
 
 class Dog : public Animal
@@ -29,7 +32,7 @@ TEST(FieldTest, Getter_Reference)
     FieldInfo nameField("Name", &Animal::Name, nullptr);
     FieldInfo ageField("Age", &Animal::Age, nullptr);
     EXPECT_EQ(nameField.GetValue<std::string>(*animal), "GenericAnimal");
-    EXPECT_EQ(ageField.GetValue<int>(*animal), 5);
+    EXPECT_EQ(ageField.GetValue<Int>(*animal), 5);
 }
 TEST(FieldTest, Setter_Reference)
 {
@@ -37,7 +40,7 @@ TEST(FieldTest, Setter_Reference)
     FieldInfo nameField("Name", &Animal::Name, nullptr);
     FieldInfo ageField("Age", &Animal::Age, nullptr);
     nameField.SetValue<std::string>(*animal, "UpdatedAnimal");
-    ageField.SetValue<int>(*animal, 6);
+    ageField.SetValue<Int>(*animal, 6);
     EXPECT_EQ(animal->Name, "UpdatedAnimal");
     EXPECT_EQ(animal->Age, 6);
 }
@@ -47,7 +50,7 @@ TEST(FieldTest, Getter_Pointer)
     FieldInfo nameField("Name", &Animal::Name, nullptr);
     FieldInfo ageField("Age", &Animal::Age, nullptr);
     EXPECT_EQ(nameField.GetValue<std::string>(animal.get()), "GenericAnimal");
-    EXPECT_EQ(ageField.GetValue<int>(animal.get()), 5);
+    EXPECT_EQ(ageField.GetValue<Int>(animal.get()), 5);
 }
 TEST(FieldTest, Setter_Pointer)
 {
@@ -55,7 +58,7 @@ TEST(FieldTest, Setter_Pointer)
     FieldInfo nameField("Name", &Animal::Name, nullptr);
     FieldInfo ageField("Age", &Animal::Age, nullptr);
     nameField.SetValue<std::string>(animal.get(), "UpdatedAnimal");
-    ageField.SetValue<int>(animal.get(), 6);
+    ageField.SetValue<Int>(animal.get(), 6);
     EXPECT_EQ(animal->Name, "UpdatedAnimal");
     EXPECT_EQ(animal->Age, 6);
 }
@@ -65,7 +68,7 @@ TEST(FieldTest, Getter_SharedPointer)
     FieldInfo nameField("Name", &Animal::Name, nullptr);
     FieldInfo ageField("Age", &Animal::Age, nullptr);
     EXPECT_EQ(nameField.GetValue<std::string>(animal), "GenericAnimal");
-    EXPECT_EQ(ageField.GetValue<int>(animal), 5);
+    EXPECT_EQ(ageField.GetValue<Int>(animal), 5);
 }
 TEST(FieldTest, Setter_SharedPointer)
 {
@@ -73,7 +76,7 @@ TEST(FieldTest, Setter_SharedPointer)
     FieldInfo nameField("Name", &Animal::Name, nullptr);
     FieldInfo ageField("Age", &Animal::Age, nullptr);
     nameField.SetValue<std::string>(animal, "UpdatedAnimal");
-    ageField.SetValue<int>(animal, 6);
+    ageField.SetValue<Int>(animal, 6);
     EXPECT_EQ(animal->Name, "UpdatedAnimal");
     EXPECT_EQ(animal->Age, 6);
 }
@@ -82,11 +85,18 @@ TEST(FieldTest, Getter_ConstField)
 {
     auto animal = std::make_shared<Animal>("GenericAnimal", 5);
     FieldInfo idField("id", &Animal::id, nullptr);
-    EXPECT_EQ(idField.GetValue<int>(*animal), 1);
+    EXPECT_EQ(idField.GetValue<Int>(*animal), 1);
 }
 TEST(FieldTest, Setter_ConstField)
 {
     auto animal = std::make_shared<Animal>("GenericAnimal", 5);
     FieldInfo idField("id", &Animal::id, nullptr);
-    EXPECT_THROW(idField.SetValue<int>(*animal, 10), std::runtime_error);
+    EXPECT_THROW(idField.SetValue<Int>(*animal, 10), std::runtime_error);
+}
+TEST(FieldTest, Setter_Field_With_Const_Value)
+{
+    auto animal = std::make_shared<Animal>("GenericAnimal", 5);
+    FieldInfo ageField("Age", &Animal::Age, nullptr);
+    const Int newAge(10);
+    ageField.SetValue(*animal, newAge);
 }
