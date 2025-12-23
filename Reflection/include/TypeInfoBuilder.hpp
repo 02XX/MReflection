@@ -39,7 +39,6 @@ class TypeInfoBuilder
         mTypeInfo->mMethods[methodName] = std::make_unique<MethodInfo>(methodName, methodPointer, mTypeInfo.get());
         return *this;
     }
-
   private:
     std::unique_ptr<TypeInfo> mTypeInfo{nullptr};
 };
