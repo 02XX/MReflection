@@ -1,8 +1,9 @@
 #pragma once
 #include <any>
-#include <exception>
 #include <functional>
-#include <iostream>
+#include <stdexcept>
+#include <tuple>
+
 namespace MReflection
 {
 class Arg
@@ -18,9 +19,11 @@ class Arg
         mIsLValueRef = std::is_lvalue_reference_v<T>;
         mIsConst = std::is_const_v<std::remove_reference_t<T>>;
         // 构造函数不允许显示指定模板参数
-        // 因此在构造函数万能引用中，T和Value只有两种结果：
-        // T左值引用 value为左值(const or non-const)引用
-        // T值类型 value为右值(const or non-const)引用
+        // 因此在构造函数万能引用中，T&& value只有四种可能状态：
+        // R& value, T is R&
+        // const R& value, T is const R&
+        // R&& value, T is R
+        // const R&& value, T is const R
         if constexpr (std::is_lvalue_reference_v<T>) // T是左值引用
         {
             // value是左值引用
@@ -42,7 +45,7 @@ class Arg
         constexpr bool TargetIsLValueRef = std::is_lvalue_reference_v<TTarget>;
         constexpr bool TargetIsRValueRef = std::is_rvalue_reference_v<TTarget>;
         constexpr bool TargetIsConst = std::is_const_v<std::remove_reference_t<TTarget>>;
-        // T四种状态 (R&, const R&, R&&, const R&&)
+        // T&& value四种状态 (R& value, const R& value, R&& value, const R&& value)
         // Target六种状态 (R, const R, R&, const R&, R&&, const R&&)
         // 4 x 6 = 24种转换可能性
         if (mIsLValueRef) // mValue是左值引用
@@ -104,6 +107,15 @@ class Arg
                 }
             }
         }
+    }
+    template <typename... TArg, size_t... Is>
+    static std::tuple<TArg...> ToTuple(std::array<Arg, sizeof...(TArg)> &argArray, std::index_sequence<Is...>)
+    {
+        return {argArray[Is].template Cast<TArg>()...};
+    }
+    template <typename... TArg> static std::tuple<TArg...> ToTuple(std::array<Arg, sizeof...(TArg)> &argArray)
+    {
+        return ToTuple<TArg...>(argArray, std::make_index_sequence<sizeof...(TArg)>{});
     }
 };
 } // namespace MReflection

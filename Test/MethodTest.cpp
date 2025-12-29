@@ -1,129 +1,64 @@
+
+#include "Int.hpp"
 #include "MethodInfo.hpp"
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
 
 using namespace MReflection;
-class Int
-{
-  public:
-    int mValue;
-    Int(int value) : mValue(value)
-    {
-    }
-    Int(const Int &other) : mValue(other.mValue)
-    {
-        GTEST_LOG_(INFO) << "Int Copy Constructor";
-    }
-    Int(Int &&other) noexcept : mValue(other.mValue)
-    {
-        GTEST_LOG_(INFO) << "Int Move Constructor";
-    }
-    Int &operator=(const Int &other)
-    {
-        GTEST_LOG_(INFO) << "Int Copy Assignment";
-        mValue = other.mValue;
-        return *this;
-    }
-    Int &operator=(Int &&other) noexcept
-    {
-        GTEST_LOG_(INFO) << "Int Move Assignment";
-        mValue = other.mValue;
-        return *this;
-    }
-};
-class Float
-{
-  public:
-    float mValue;
-    Float(float value) : mValue(value)
-    {
-    }
-    Float(const Float &other) : mValue(other.mValue)
-    {
-        GTEST_LOG_(INFO) << "Float Copy Constructor";
-    }
-    Float(Float &&other) noexcept : mValue(other.mValue)
-    {
-        GTEST_LOG_(INFO) << "Float Move Constructor";
-    }
-    Float &operator=(const Float &other)
-    {
-        GTEST_LOG_(INFO) << "Float Copy Assignment";
-        mValue = other.mValue;
-        return *this;
-    }
-};
+
 class Animal
 {
   public:
+    std::string Name;
+    Int Age;
     Animal(const std::string &name, int age) : Name(name), Age(age)
     {
     }
     virtual ~Animal() = default;
-    std::string Name;
-    int Age;
+    const std::string &GetName() const
+    {
+        return Name;
+    }
+    void SetName(const std::string &newName)
+    {
+        Name = newName;
+    }
+    const Int &GetAge() const
+    {
+        return Age;
+    }
+    void SetAge(const Int &newAge)
+    {
+        Age = newAge;
+    }
     virtual std::string Speak() const
     {
         return "Animal sound";
     }
-    void CelebrateBirthday()
-    {
-        GTEST_LOG_(INFO) << "Happy Birthday, " << Name << "!";
-        Age += 1;
-    }
-    std::string SetName(const std::string &newName)
-    {
-        Name = newName;
-        return Name;
-    }
-    void ChangeName(std::string &nameRef)
-    {
-        nameRef = "ChangedName";
-    }
-    void Test(Int intObj, Float floatObj)
-    {
-        GTEST_LOG_(INFO) << "Int Value: " << intObj.mValue << ", Float Value: " << floatObj.mValue;
-    }
 };
 
-class Dog : public Animal
-{
-  public:
-    Dog(const std::string &name, int age, const std::string &breed) : Animal(name, age), Breed(breed)
-    {
-    }
-    std::string Breed;
-    std::string Speak() const override
-    {
-        return "Woof!";
-    }
-};
-TEST(ArgTest, Cast)
-{
-    const Int intObj(10);
-    // 目标是引用
-    //  原始是引用
-    //      原始是const
-            {
-                
-            }
-    //  原始是值类型
-    //      原始是non-const
-    // 目标是值类型
-    //  原始是引用
-    //      原始是const
-    //     原始是non-const
-    //  原始是值类型
-    //      原始是const
-    //      原始是non-const
-}
-
-// TEST(MethodInfoTest, LRValue)
+// TEST(MethodTest, InvokeMethod_1)
 // {
-//     auto animal = std::make_unique<Animal>("123", 123);
-//     MethodInfo m("Test", &Animal::Test, nullptr);
-//     Int intObj(10);
-//     Float floatObj(20.5f);
-//     m.Invoke(*animal, intObj, Float(20.5f));
+//     auto animal = std::make_shared<Animal>("GenericAnimal", 5);
+//     MethodInfo getName("GetName", &Animal::GetName, nullptr);
+//     MethodInfo setName("SetName", &Animal::SetName, nullptr);
+//     std::string currentName = std::any_cast<const std::string &>(getName.Invoke(*animal));
+//     EXPECT_EQ(currentName, "GenericAnimal");
+//     std::string newName = "NewAnimalName";
+//     setName.Invoke(*animal, newName);
+//     currentName = std::any_cast<const std::string &>(getName.Invoke(*animal));
+//     EXPECT_EQ(currentName, "NewAnimalName");
 // }
+TEST(MethodTest, InvokeMethod_2)
+{
+    auto animal = std::make_shared<Animal>("GenericAnimal", 5);
+    MethodInfo getAge("GetAge", &Animal::GetAge, nullptr);
+    MethodInfo setAge("SetAge", &Animal::SetAge, nullptr);
+    // Int currentAge = std::any_cast<const Int &>(getAge.Invoke(*animal));
+    // EXPECT_EQ(currentAge.mValue, 5);
+    Int newAge(10);
+    setAge.Invoke(*animal, newAge);
+    // currentAge = std::any_cast<const Int &>(getAge.Invoke(*animal));
+    // EXPECT_EQ(currentAge.mValue, 10);
+}

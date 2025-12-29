@@ -3,11 +3,11 @@
 #include "MemberInfo.hpp"
 #include "MemberTypes.hpp"
 #include <any>
+#include <array>
 #include <functional>
 #include <iostream>
 #include <tuple>
 #include <type_traits>
-
 
 namespace MReflection
 {
@@ -21,14 +21,23 @@ class MethodInfo final : public MemberInfo
     MethodInfo(const std::string &name, TRet (TClass::*methodPointer)(TArgs...), TypeInfo *declaringType)
         : MemberInfo(name, declaringType)
     {
-        auto f = [](auto &&...xs) {
-            (..., (std::cout << "LValue: " << std::is_lvalue_reference_v<decltype(xs)> << ", RValue: "
-                             << std::is_rvalue_reference_v<decltype(xs)>));
-        };
-        mInvokeHandler = [methodPointer, f](std::any obj, std::any args) -> std::any {
+        mInvokeHandler = [methodPointer](std::any obj, std::any args) -> std::any {
             auto &instance = std::any_cast<std::reference_wrapper<TClass>>(obj).get();
-            auto &tupleArgs = std::any_cast<std::reference_wrapper<std::tuple<TArgs...>>>(args).get();
-            return {};
+            auto &argsArray = std::any_cast<std::reference_wrapper<std::array<Arg, sizeof...(TArgs)>>>(args).get();
+            auto tupleArgs = Arg::ToTuple<TArgs...>(argsArray);
+            return std::apply(
+                [&instance, methodPointer](auto &&...unpackedArgs) {
+                    if constexpr (std::is_void_v<TRet>)
+                    {
+                        (instance.*methodPointer)(std::forward<TArgs>(unpackedArgs)...);
+                        return std::any{};
+                    }
+                    else
+                    {
+                        return (instance.*methodPointer)(std::forward<TArgs>(unpackedArgs)...);
+                    }
+                },
+                tupleArgs);
         };
         mIsConst = false;
     }
@@ -37,11 +46,12 @@ class MethodInfo final : public MemberInfo
         : MemberInfo(name, declaringType)
     {
         mInvokeHandler = [methodPointer](std::any obj, std::any args) -> std::any {
-            auto &instance = std::any_cast<std::reference_wrapper<TClass>>(obj).get();
-            auto &tupleArgs = std::any_cast<std::tuple<TArgs &&...> &>(args);
+            auto &instance = std::any_cast<std::reference_wrapper<const TClass>>(obj).get();
+            auto &argsArray = std::any_cast<std::reference_wrapper<std::array<Arg, sizeof...(TArgs)>>>(args).get();
+            auto tupleArgs = Arg::ToTuple<TArgs...>(argsArray);
             return std::apply(
-                [&instance, methodPointer](TArgs &&...unpackedArgs) {
-                    if constexpr (std::is_void<TRet>::value)
+                [&instance, methodPointer](auto &&...unpackedArgs) {
+                    if constexpr (std::is_void_v<TRet>)
                     {
                         (instance.*methodPointer)(std::forward<TArgs>(unpackedArgs)...);
                         return std::any{};
@@ -63,13 +73,12 @@ class MethodInfo final : public MemberInfo
   public:
     template <class TClass, typename... TArgs> std::any Invoke(TClass &obj, TArgs &&...args) const
     {
-        auto tupleArgs = std::forward_as_tuple(std::forward<TArgs>(args)...);
-        auto t = typeid(tupleArgs).name();
+        std::array<Arg, sizeof...(TArgs)> argArray{Arg(std::forward<TArgs>(args))...};
         if (mIsConst)
         {
-            return mInvokeHandler(std::cref(obj), std::ref(tupleArgs));
+            return mInvokeHandler(std::cref(obj), std::ref(argArray));
         }
-        return mInvokeHandler(std::ref(obj), std::ref(tupleArgs));
+        return mInvokeHandler(std::ref(obj), std::ref(argArray));
     }
 
   private:
