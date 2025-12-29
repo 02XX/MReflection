@@ -1,4 +1,5 @@
 #pragma once
+#include "Arg.hpp"
 #include "MemberInfo.hpp"
 #include "MemberTypes.hpp"
 #include <any>
@@ -7,84 +8,10 @@
 #include <tuple>
 #include <type_traits>
 
+
 namespace MReflection
 {
-class Arg
-{
-  private:
-    std::any mValue;
-    bool mIsRef{false};
-    bool mIsConst{false};
 
-  public:
-    template <typename T> Arg(T &&value)
-    {
-        mIsRef = std::is_lvalue_reference_v<T>;
-        mIsConst = std::is_const_v<std::remove_reference_t<T>>;
-        if constexpr (std::is_lvalue_reference_v<T>)
-        {
-            mValue = std::ref(value); // 存储引用
-        }
-        else
-        {
-            mValue = std::forward<T>(value); // move or copy
-        }
-    }
-    template <typename TTarget> TTarget Cast()
-    {
-        using CleanT = std::remove_cv_t<std::remove_reference_t<TTarget>>;
-        if constexpr (std::is_lvalue_reference_v<TTarget>) // 目标类型是引用类型
-        {
-
-            if (!mIsRef) // 原始类型是值类型
-            {
-                if constexpr (!std::is_const_v<std::remove_reference_t<TTarget>>)
-                    return std::any_cast<CleanT &>(mValue);
-                else
-                    return std::any_cast<const CleanT &>(mValue);
-            }
-            else //  原始类型是引用类型
-            {
-                if (mIsConst) // 原始类型是const引用
-                {
-                    // 原始类型是std::reference_wrapper<const T>
-                    auto refWrapper = std::any_cast<std::reference_wrapper<const CleanT>>(mValue);
-                    if constexpr (!std::is_const_v<std::remove_reference_t<TTarget>>)
-                        throw std::runtime_error("不能将const引用转换为非const引用");
-                    else
-                        return refWrapper.get();
-                }
-                else // 原始类型是非const引用
-                {
-                    // 原始类型是std::reference_wrapper<T>
-                    auto refWrapper = std::any_cast<std::reference_wrapper<CleanT>>(mValue);
-                    return refWrapper.get();
-                }
-            }
-        }
-        else // 目标类型是值类型
-        {
-            if (mIsRef) // 原始类型是引用类型
-            {
-                if (mIsConst) // 原始类型是const引用
-                {
-                    // 原始类型是std::reference_wrapper<const T>
-                    return std::any_cast<std::reference_wrapper<const CleanT>>(mValue).get();
-                }
-                else // 原始类型是非const引用
-                {
-                    // 原始类型是std::reference_wrapper<T>
-                    return std::any_cast<std::reference_wrapper<CleanT>>(mValue).get();
-                }
-            }
-            else // 原始类型是值类型
-            {
-                return std::any_cast<const CleanT &>(
-                    mValue); // 返回引用给TTarget发生时再copy，避免any_cast的时候产生多余的copy
-            }
-        }
-    }
-};
 class MethodInfo final : public MemberInfo
 {
     using InvokeHandler = std::function<std::any(std::any, std::any)>;
