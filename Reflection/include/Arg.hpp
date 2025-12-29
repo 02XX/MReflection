@@ -6,6 +6,10 @@
 
 namespace MReflection
 {
+/**
+ * @brief 参数封装类，将传入的任意形式参数（左右值，引用，常量...）Cast为目标类型
+ *
+ */
 class Arg
 {
   private:
@@ -50,61 +54,88 @@ class Arg
         // 4 x 6 = 24种转换可能性
         if (mIsLValueRef) // mValue是左值引用
         {
-            if constexpr (TargetIsRValueRef)
+            if (mIsConst)
             {
-                throw std::runtime_error("Cannot cast lvalue reference to rvalue reference");
-            }
-            else
-            {
-                if (mIsConst)
+                // 存储的是 std::reference_wrapper<const CleanTarget>
+                auto ref = std::any_cast<std::reference_wrapper<const CleanTarget>>(mValue);
+                if constexpr (TargetIsLValueRef)
                 {
-                    // 存储的是 std::reference_wrapper<const CleanTarget>
-                    if constexpr (!TargetIsConst && TargetIsLValueRef)
+                    if constexpr (TargetIsConst)
                     {
-                        throw std::runtime_error("Cannot cast const reference to non-const reference");
+                        return ref.get();
                     }
                     else
                     {
-                        auto ref = std::any_cast<std::reference_wrapper<const CleanTarget>>(mValue);
-                        return ref.get();
+                        return const_cast<CleanTarget &>(ref.get());
+                    }
+                }
+                else if constexpr (TargetIsRValueRef)
+                {
+                    if constexpr (TargetIsConst)
+                    {
+                        return std::move(ref.get());
+                    }
+                    else
+                    {
+                        return std::move(const_cast<CleanTarget &>(ref.get()));
                     }
                 }
                 else
                 {
-                    // 存储的是 std::reference_wrapper<CleanTarget>
-                    auto ref = std::any_cast<std::reference_wrapper<CleanTarget>>(mValue);
                     return ref.get();
                 }
+            }
+            else
+            {
+                // 存储的是 std::reference_wrapper<CleanTarget>
+                auto ref = std::any_cast<std::reference_wrapper<CleanTarget>>(mValue);
+                if constexpr (TargetIsRValueRef)
+                    return std::move(ref.get());
+                else
+                    return ref.get();
             }
         }
         else // mValue是右值引用
         {
-            if constexpr (TargetIsLValueRef)
+            if (mIsConst)
             {
-                throw std::runtime_error("Cannot cast rvalue to lvalue reference");
-            }
-            else
-            {
-                if (mIsConst)
+                // 存储的是 const CleanTarget
+                auto &val = std::any_cast<const CleanTarget &>(mValue);
+                if constexpr (TargetIsLValueRef)
                 {
-                    // 存储的是 const CleanTarget
-                    auto &val = std::any_cast<const CleanTarget &>(mValue);
-                    if constexpr (!TargetIsConst && TargetIsRValueRef)
-                        throw std::runtime_error("Cannot cast const value to non-const reference");
-                    else if constexpr (TargetIsRValueRef)
-                        return std::move(val);
-                    else
+                    if constexpr (TargetIsConst)
+                    {
                         return val;
+                    }
+                    else
+                    {
+                        return const_cast<CleanTarget &>(val);
+                    }
+                }
+                else if constexpr (TargetIsRValueRef)
+                {
+                    if constexpr (TargetIsConst)
+                    {
+                        return std::move(val);
+                    }
+                    else
+                    {
+                        return std::move(const_cast<CleanTarget &>(val));
+                    }
                 }
                 else
                 {
-                    // 存储的是 CleanTarget
-                    auto &val = std::any_cast<CleanTarget &>(mValue);
-                    if constexpr (TargetIsRValueRef)
-                        return std::move(val);
-                    else
-                        return val;
+                    return val;
                 }
+            }
+            else
+            {
+                // 存储的是 CleanTarget
+                auto &val = std::any_cast<CleanTarget &>(mValue);
+                if constexpr (TargetIsRValueRef)
+                    return std::move(val);
+                else
+                    return val;
             }
         }
     }
